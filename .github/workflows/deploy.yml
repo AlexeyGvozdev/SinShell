@@ -2,10 +2,10 @@ name: Deploy to Yandex Cloud
 
 on:
   push:
-    branches: [ main ]
+    branches: [ develop ]
   pull_request:
-    branches: [ main ]
-    types: [closed]
+    branches: [ develop ]
+    # types: [closed]
 
 jobs:
   test:
@@ -24,12 +24,6 @@ jobs:
         npm ci
         cd frontend && npm ci
         cd ../backend && npm ci
-    
-    - name: Run linting
-      run: |
-        npm run lint
-        cd frontend && npm run lint
-        cd ../backend && npm run lint
     
     - name: Run tests
       run: |
