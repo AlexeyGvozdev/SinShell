@@ -1,5 +1,4 @@
-import React from 'react';
-import { render, renderHook, act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { ThemeProvider, useTheme } from '../ThemeContext';
 import { defaultTheme, draculaTheme } from '@/lib/themes';
 

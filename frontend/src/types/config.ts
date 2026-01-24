@@ -7,6 +7,7 @@ export interface SiteConfig {
   description: string;
   author: string;
   version: string;
+  repository?: string;
 }
 
 export interface PromptConfig {
