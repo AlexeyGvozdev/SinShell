@@ -5,9 +5,11 @@ import { logger } from './middleware/logger';
 // Загрузка переменных окружения
 dotenv.config();
 
-// Получение порта из переменных окружения или использование значения по умолчанию
-const PORT = process.env.PORT || 3001;
-const NODE_ENV = process.env.NODE_ENV || 'development';
+import { config } from './config';
+
+// Получение порта из конфигурации
+const PORT = config.port;
+const NODE_ENV = config.env;
 
 async function startServer() {
   try {

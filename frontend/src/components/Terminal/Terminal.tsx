@@ -79,7 +79,7 @@ export const Terminal: React.FC<TerminalProps> = ({
       maxSuggestions: 10,
       includeArguments: false
     }));
-  }, []);
+  }, [commandRegistry]);
 
   // Добавляем приветственное сообщение при монтировании
   useEffect(() => {
