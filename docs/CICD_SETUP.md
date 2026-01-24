@@ -139,6 +139,9 @@ yc serverless container get --name sinshell-app --format json | jq -r '.status[0
 | `YC_SERVICE_ACCOUNT_ID` | ID сервисного аккаунта | `ajeXXXXXXXXXXXXXXXX` |
 | `APP_DOMAIN` | Домен приложения | Получите после первого развертывания |
 
+**Альтернативный метод аутентификации (если проблемы с JSON):**
+| `YC_IAM_TOKEN` | IAM токен сервисного аккаунта | Получите через `yc iam create-token` |
+
 ---
 
 ## 📝 Файл CI/CD пайплайна
@@ -243,7 +246,7 @@ yc resource-manager folder list-access-bindings --name your-folder-name
 
 **Проблема: Ошибка экшена yc-actions**
 - Убедитесь что все секреты правильно настроены
-- Проверьте формат JSON в `YC_SA_JSON_CREDENTIALS`
+- Проверьте формат JSON в `YC_SA_JSON_CREDENTIALS` (см. [YC_SA_JSON_FORMAT_GUIDE.md](YC_SA_JSON_FORMAT_GUIDE.md))
 - Убедитесь что сервисный аккаунт имеет необходимые права
 
 ---
