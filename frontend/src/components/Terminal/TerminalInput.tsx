@@ -13,6 +13,10 @@ export interface TerminalInputProps {
   placeholder?: string;
   autoFocus?: boolean;
   className?: string;
+  // Новые пропсы для истории команд
+  onHistoryUp?: () => string | null;
+  onHistoryDown?: () => string | null;
+  onResetHistoryNavigation?: () => void;
 }
 
 /**
@@ -28,6 +32,9 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   placeholder = 'Введите команду...',
   autoFocus = true,
   className = '',
+  onHistoryUp,
+  onHistoryDown,
+  onResetHistoryNavigation,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -45,6 +52,39 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
       onKeyDown(event);
     }
 
+    // Обработка навигации по истории
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (onHistoryUp) {
+        const previousCommand = onHistoryUp();
+        if (previousCommand !== null) {
+          onChange(previousCommand);
+        }
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (onHistoryDown) {
+        const nextCommand = onHistoryDown();
+        if (nextCommand !== null) {
+          onChange(nextCommand);
+        } else {
+          // Если следующей команды нет, очищаем ввод
+          onChange('');
+        }
+      }
+      return;
+    }
+
+    // Сброс навигации по истории при вводе текста
+    if (event.key.length === 1 || event.key === 'Backspace' || event.key === 'Delete') {
+      if (onResetHistoryNavigation) {
+        onResetHistoryNavigation();
+      }
+    }
+
     // Обработка Enter
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -58,6 +98,10 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   // Обработка изменения значения
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onChange(event.target.value);
+    // Сбрасываем навигацию по истории при изменении ввода
+    if (onResetHistoryNavigation) {
+      onResetHistoryNavigation();
+    }
   };
 
   return (

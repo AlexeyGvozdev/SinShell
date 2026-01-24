@@ -9,6 +9,7 @@ import { TerminalInput } from './TerminalInput';
 import { TerminalOutput } from './TerminalOutput';
 import { HistoryEntry } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
+import { CommandHistory } from '@/lib/history';
 
 export interface TerminalProps {
   onCommand?: (command: string) => Promise<React.ReactNode>;
@@ -32,6 +33,9 @@ export const Terminal: React.FC<TerminalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
   const { currentTheme } = useTheme();
+  
+  // Экземпляр истории команд
+  const [commandHistory] = useState(() => new CommandHistory(100));
 
   // Добавляем приветственное сообщение при монтировании
   useEffect(() => {
@@ -71,7 +75,7 @@ export const Terminal: React.FC<TerminalProps> = ({
 
       setIsProcessing(true);
 
-      // Добавляем команду в историю
+      // Добавляем команду в историю отображения
       addToHistory({
         command,
         output: null,
@@ -85,7 +89,7 @@ export const Terminal: React.FC<TerminalProps> = ({
           output = await onCommand(command);
         }
 
-        // Добавляем результат в историю
+        // Добавляем результат в историю отображения
         if (output) {
           addToHistory({
             command: '',
@@ -93,20 +97,42 @@ export const Terminal: React.FC<TerminalProps> = ({
             type: 'output',
           });
         }
+
+        // Добавляем команду в историю команд с результатом
+        const resultText = typeof output === 'string' ? output :
+                         output?.toString() || 'Command executed';
+        commandHistory.addCommand(command, resultText);
       } catch (error) {
-        // Добавляем ошибку в историю
+        // Добавляем ошибку в историю отображения
+        const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка';
         addToHistory({
           command: '',
-          output: error instanceof Error ? error.message : 'Произошла ошибка',
+          output: errorMessage,
           type: 'error',
         });
+
+        // Добавляем команду в историю команд с ошибкой
+        commandHistory.addCommand(command, errorMessage);
       } finally {
         setIsProcessing(false);
         setCurrentInput('');
       }
     },
-    [onCommand, addToHistory]
+    [onCommand, addToHistory, commandHistory]
   );
+
+  // Обработчики навигации по истории
+  const handleHistoryUp = useCallback(() => {
+    return commandHistory.getPreviousCommand();
+  }, [commandHistory]);
+
+  const handleHistoryDown = useCallback(() => {
+    return commandHistory.getNextCommand();
+  }, [commandHistory]);
+
+  const handleResetHistoryNavigation = useCallback(() => {
+    commandHistory.resetNavigation();
+  }, [commandHistory]);
 
 
   return (
@@ -135,6 +161,9 @@ export const Terminal: React.FC<TerminalProps> = ({
           onSubmit={executeCommand}
           disabled={isProcessing}
           autoFocus
+          onHistoryUp={handleHistoryUp}
+          onHistoryDown={handleHistoryDown}
+          onResetHistoryNavigation={handleResetHistoryNavigation}
         />
       </div>
     </div>

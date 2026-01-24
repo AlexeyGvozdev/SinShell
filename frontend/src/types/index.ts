@@ -5,5 +5,6 @@
 export * from './api';
 export * from './command';
 export * from './config';
+export * from './history';
 export * from './terminal';
 export * from './theme';
