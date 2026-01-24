@@ -10,12 +10,20 @@ import { TerminalOutput } from './TerminalOutput';
 import { HistoryEntry } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
 import { CommandHistory } from '@/lib/history';
+import { createAutocompleteManager } from '@/lib/autocomplete';
+import { DefaultCommandRegistry } from '@/lib/commands/registry';
+import { helpCommand, clearCommand, aboutCommand, themeCommand } from '@/lib/commands/builtins';
+import { apiCommands } from '@/lib/commands/api';
 
 export interface TerminalProps {
   onCommand?: (command: string) => Promise<React.ReactNode>;
   welcomeMessage?: React.ReactNode;
   className?: string;
   title?: string;
+  // Опциональные callback'и для тестирования интерактивных функций
+  onAutocomplete?: (input: string) => string | null;
+  onHistoryNavigate?: (direction: 'up' | 'down') => void;
+  onHistoryReset?: () => void;
 }
 
 /**
@@ -27,6 +35,9 @@ export const Terminal: React.FC<TerminalProps> = ({
   welcomeMessage,
   className = '',
   title = 'SinShell Terminal',
+  onAutocomplete,
+  onHistoryNavigate,
+  onHistoryReset,
 }) => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [currentInput, setCurrentInput] = useState('');
@@ -34,8 +45,41 @@ export const Terminal: React.FC<TerminalProps> = ({
   const terminalRef = useRef<HTMLDivElement>(null);
   const { currentTheme } = useTheme();
   
+  // Создаем локальный экземпляр реестра команд
+  const [commandRegistry] = useState(() => new DefaultCommandRegistry());
+  
   // Экземпляр истории команд
   const [commandHistory] = useState(() => new CommandHistory(100));
+  
+  // Экземпляр менеджера автокомплита
+  const [autocompleteManager, setAutocompleteManager] = useState(() => {
+    return createAutocompleteManager({
+      commandRegistry,
+      maxSuggestions: 10,
+      includeArguments: false
+    });
+  });
+
+  // Инициализируем команды после монтирования
+  useEffect(() => {
+    // Инициализируем встроенные команды
+    commandRegistry.register(helpCommand);
+    commandRegistry.register(clearCommand);
+    commandRegistry.register(aboutCommand);
+    commandRegistry.register(themeCommand);
+    
+    // Инициализируем API команды
+    apiCommands.forEach(command => {
+      commandRegistry.register(command);
+    });
+    
+    // Обновляем менеджер автокомплита после инициализации команд
+    setAutocompleteManager(createAutocompleteManager({
+      commandRegistry,
+      maxSuggestions: 10,
+      includeArguments: false
+    }));
+  }, []);
 
   // Добавляем приветственное сообщение при монтировании
   useEffect(() => {
@@ -123,17 +167,44 @@ export const Terminal: React.FC<TerminalProps> = ({
 
   // Обработчики навигации по истории
   const handleHistoryUp = useCallback(() => {
+    if (onHistoryNavigate) {
+      onHistoryNavigate('up');
+      return '';
+    }
     return commandHistory.getPreviousCommand();
-  }, [commandHistory]);
+  }, [commandHistory, onHistoryNavigate]);
 
   const handleHistoryDown = useCallback(() => {
+    if (onHistoryNavigate) {
+      onHistoryNavigate('down');
+      return '';
+    }
     return commandHistory.getNextCommand();
-  }, [commandHistory]);
+  }, [commandHistory, onHistoryNavigate]);
 
   const handleResetHistoryNavigation = useCallback(() => {
-    commandHistory.resetNavigation();
-  }, [commandHistory]);
+    if (onHistoryReset) {
+      onHistoryReset();
+    } else {
+      commandHistory.resetNavigation();
+    }
+  }, [commandHistory, onHistoryReset]);
 
+  // Обработчик автокомплита
+  const handleAutocomplete = useCallback((input: string, cursorPosition: number) => {
+    // Если предоставлен внешний callback, используем его
+    if (onAutocomplete) {
+      return onAutocomplete(input);
+    }
+    
+    // Иначе используем встроенный автокомплит
+    const result = autocompleteManager.getSuggestions(input, cursorPosition);
+    if (result.suggestions.length > 0) {
+      // Берем первое предложение (самое релевантное)
+      return autocompleteManager.applySuggestion(input, result.suggestions[0], result);
+    }
+    return null;
+  }, [autocompleteManager, onAutocomplete]);
 
   return (
     <div
@@ -164,6 +235,7 @@ export const Terminal: React.FC<TerminalProps> = ({
           onHistoryUp={handleHistoryUp}
           onHistoryDown={handleHistoryDown}
           onResetHistoryNavigation={handleResetHistoryNavigation}
+          onAutocomplete={handleAutocomplete}
         />
       </div>
     </div>

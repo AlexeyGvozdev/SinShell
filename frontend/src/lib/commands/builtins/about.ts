@@ -10,6 +10,7 @@ export const aboutCommand: CommandDefinition = {
   name: 'about',
   description: 'Показывает информацию о терминале',
   usage: 'about',
+  category: 'builtin',
   
   execute: (_context: CommandContext): CommandResult => {
     const config = getConfig();

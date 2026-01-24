@@ -13,6 +13,7 @@ export const aboutApiCommand: CommandDefinition = {
   description: 'Получить информацию о проекте с сервера',
   usage: 'about-api',
   examples: ['about-api'],
+  category: 'api',
   async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const about = await apiClient.getAbout();
@@ -54,6 +55,7 @@ export const aboutExtendedCommand: CommandDefinition = {
   description: 'Получить расширенную информацию о проекте',
   usage: 'about-extended',
   examples: ['about-extended'],
+  category: 'api',
   async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const about = await apiClient.getExtendedAbout();
@@ -109,6 +111,7 @@ export const licenseCommand: CommandDefinition = {
   description: 'Получить информацию о лицензии проекта',
   usage: 'license',
   examples: ['license'],
+  category: 'api',
   async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const license = await apiClient.getLicense();
@@ -167,6 +170,7 @@ export const projectCommand: CommandDefinition = {
   description: 'Получить краткую сводку о проекте',
   usage: 'project',
   examples: ['project'],
+  category: 'api',
   async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const [about, health] = await Promise.all([

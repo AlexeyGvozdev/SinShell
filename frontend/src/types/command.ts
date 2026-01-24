@@ -42,6 +42,8 @@ export interface CommandDefinition {
   examples?: string[];
   /** Псевдонимы команды */
   aliases?: string[];
+  /** Категория команды */
+  category?: string;
   /** Функция выполнения команды */
   execute: (context: CommandContext) => Promise<CommandResult> | CommandResult;
 }
