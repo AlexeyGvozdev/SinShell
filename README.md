@@ -9,12 +9,16 @@ A modern terminal-styled website built with Next.js frontend and Express backend
 ## Features
 
 - 🖥️ Terminal-style interface
-- ⚡ Next.js 13+ with TypeScript
+- ⚡ Next.js 14+ with TypeScript
 - 🎨 Tailwind CSS for styling
 - 🔧 Express.js backend with TypeScript
 - 📱 Responsive design
 - 🎯 Customizable commands
 - 🌙 Multiple themes support
+- 📜 Command history with navigation
+- 🔍 Tab autocomplete for commands
+- 🚀 Docker containerization
+- ☁️ Yandex Cloud deployment ready
 
 ## Project Structure
 
@@ -22,7 +26,13 @@ A modern terminal-styled website built with Next.js frontend and Express backend
 sinshell/
 ├── frontend/          # Next.js frontend application
 ├── backend/           # Express.js backend API
-├── package.json       # Root package.json for workspace management
+├── docs/              # Documentation
+├── Dockerfile         # Multi-stage Docker build
+├── server.js          # Unified server for deployment
+├── deploy.sh          # Automated deployment script
+├── .dockerignore      # Docker exclusions
+├── .env.production    # Production environment variables
+├── QUICK_DEPLOY.md    # Quick deployment guide
 └── README.md         # This file
 ```
 
@@ -101,36 +111,166 @@ Edit `backend/src/config/index.ts` to configure:
 
 ## Available Commands
 
+### Built-in Commands
 - `help` - Show available commands
 - `about` - Display information about the site
-- `projects` - List your projects
-- `contact` - Show contact information
 - `clear` - Clear terminal
 - `theme` - Change terminal theme
+- `history` - Show command history
+- `autocomplete` - Test autocomplete functionality
+
+### API Commands
+- `health` - Check backend health status
+- `info` - Display system information
+- `about-api` - Get detailed project information
+
+### Interactive Features
+- **Arrow Up/Down** - Navigate through command history
+- **Tab** - Autocomplete commands
+- **Ctrl+C** - Cancel current command
 
 ## Deployment
 
-### Frontend (Vercel)
+### 🔄 CI/CD Auto-Deploy (Recommended)
 
+**Automatic deployment on merge to main branch:**
+
+1. **Setup CI/CD** (5 minutes):
+   ```bash
+   # Follow the quick setup guide
+   # 📖 See: CICD_QUICK_SETUP.md
+   ```
+
+2. **Push to main**:
+   ```bash
+   git add .
+   git commit -m "feat: add new feature"
+   git push origin main
+   ```
+
+3. **Auto-deployment happens**:
+   - ✅ Tests run automatically
+   - ✅ Docker image built and pushed
+   - ✅ Application deployed to Yandex Cloud
+   - ✅ URL provided in GitHub Actions
+
+📖 **CI/CD Setup**: [CICD_QUICK_SETUP.md](CICD_QUICK_SETUP.md) - 5-minute setup
+📚 **Full CI/CD Guide**: [docs/CICD_SETUP.md](docs/CICD_SETUP.md) - detailed configuration
+
+### 🚀 Manual Deploy to Yandex Cloud
+
+**Deploy in 5 minutes with automated script:**
+
+```bash
+# 1. Install prerequisites
+# - Yandex CLI: https://cloud.yandex.ru/docs/cli/quickstart
+# - Docker: https://docs.docker.com/get-docker/
+
+# 2. Authenticate
+yc init
+
+# 3. Deploy!
+./deploy.sh
+```
+
+The script will automatically:
+- ✅ Create container registry
+- ✅ Build and push Docker image
+- ✅ Deploy to Yandex Cloud App Platform
+- ✅ Configure environment variables
+- ✅ Provide application URL
+
+📖 **Detailed Guide**: See [QUICK_DEPLOY.md](QUICK_DEPLOY.md) for step-by-step instructions
+📚 **Full Documentation**: See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for advanced configuration
+
+### Manual Deployment Options
+
+#### Docker Deployment
+```bash
+# Build image
+docker build -t sinshell .
+
+# Run container
+docker run -p 80:80 sinshell
+```
+
+#### Traditional Deployment
+
+**Frontend (Vercel)**
 1. Connect your GitHub repository to Vercel
 2. Set root directory to `frontend`
 3. Deploy automatically on push to main branch
 
-### Backend (Railway/Render)
-
+**Backend (Railway/Render)**
 1. Connect your GitHub repository to Railway/Render
 2. Set root directory to `backend`
 3. Configure environment variables
 4. Deploy automatically on push to main branch
 
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run frontend tests
+cd frontend && npm test
+
+# Run backend tests
+cd backend && npm test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+**Current Coverage**: 97.65% statements, 88.46% branches, 98.14% functions, 98.31% lines
+
+## Development Workflow
+
+```bash
+# Install dependencies
+npm run install:all
+
+# Start development servers
+npm run dev
+
+# Run linting
+npm run lint
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
+
+# Start production servers
+npm start
+```
+
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. Add tests for new functionality
+5. Ensure all tests pass (`npm test`)
+6. Run linting (`npm run lint`)
+7. Submit a pull request
+
+## Architecture
+
+- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS
+- **Backend**: Express.js with TypeScript
+- **Testing**: Jest with React Testing Library
+- **Deployment**: Docker containers with Yandex Cloud App Platform
+- **CI/CD**: GitHub Actions for automated testing
+
+📖 **Architecture Details**: See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## License
 
 MIT License - see LICENSE file for details.
+
+---
+
+**🎉 Ready to deploy? Check out [QUICK_DEPLOY.md](QUICK_DEPLOY.md) to get your SinShell running in Yandex Cloud in minutes!**

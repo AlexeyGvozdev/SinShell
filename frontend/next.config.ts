@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
   
   // Настройка для production
   poweredByHeader: false,
+  
+  // Standalone output для Docker
+  output: 'standalone',
+  
+  // Экспериментальные настройки
+  experimental: {
+    // Оптимизация для production
+    optimizePackageImports: ['lucide-react'],
+  },
 };
 
 export default nextConfig;
