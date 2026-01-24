@@ -1,26 +1,149 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Terminal colors - Default theme */
+  --terminal-bg: #000000;
+  --terminal-fg: #00ff00;
+  --terminal-cursor: #00ff00;
+  --terminal-selection: rgba(0, 255, 0, 0.3);
+  --terminal-comment: #808080;
+  --terminal-red: #ff0000;
+  --terminal-green: #00ff00;
+  --terminal-yellow: #ffff00;
+  --terminal-blue: #0000ff;
+  --terminal-magenta: #ff00ff;
+  --terminal-cyan: #00ffff;
+  --terminal-white: #ffffff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Terminal specific styles */
+.terminal-container {
+  width: 100%;
+  height: 100vh;
+  background: var(--terminal-bg);
+  color: var(--terminal-fg);
+  padding: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.terminal-line {
+  margin-bottom: 0.25rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.terminal-prompt {
+  color: var(--terminal-blue);
+  font-weight: bold;
+  user-select: none;
+}
+
+.terminal-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--terminal-fg);
+  font-family: inherit;
+  font-size: inherit;
+  width: 100%;
+  caret-color: var(--terminal-cursor);
+}
+
+.terminal-input::selection {
+  background: var(--terminal-selection);
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 0.5rem;
+  height: 1.2rem;
+  background: var(--terminal-cursor);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Scrollbar styling */
+.terminal-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminal-container::-webkit-scrollbar-track {
+  background: var(--terminal-bg);
+}
+
+.terminal-container::-webkit-scrollbar-thumb {
+  background: var(--terminal-comment);
+  border-radius: 4px;
+}
+
+.terminal-container::-webkit-scrollbar-thumb:hover {
+  background: var(--terminal-fg);
+}
+
+/* Text colors */
+.text-error {
+  color: var(--terminal-red);
+}
+
+.text-success {
+  color: var(--terminal-green);
+}
+
+.text-warning {
+  color: var(--terminal-yellow);
+}
+
+.text-info {
+  color: var(--terminal-cyan);
+}
+
+.text-comment {
+  color: var(--terminal-comment);
+}
+
+/* Banner styling */
+.terminal-banner {
+  color: var(--terminal-cyan);
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+/* Welcome message */
+.terminal-welcome {
+  color: var(--terminal-yellow);
+  margin-bottom: 1rem;
 }

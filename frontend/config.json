@@ -1,0 +1,39 @@
+{
+  "site": {
+    "title": "SinShell",
+    "description": "Terminal styled website",
+    "author": "Your Name",
+    "version": "1.0.0"
+  },
+  "terminal": {
+    "prompt": {
+      "user": "visitor",
+      "host": "sinshell",
+      "symbol": "$"
+    },
+    "welcomeMessage": "Welcome to SinShell! Type 'help' to see available commands.",
+    "banner": {
+      "enabled": true,
+      "text": [
+        "  ____  _       ____  _          _ _ ",
+        " / ___|(_)_ __ / ___|| |__   ___| | |",
+        " \\___ \\| | '_ \\\\___ \\| '_ \\ / _ \\ | |",
+        "  ___) | | | | |___) | | | |  __/ | |",
+        " |____/|_|_| |_|____/|_| |_|\\___|_|_|",
+        "",
+        " Terminal Styled Website v1.0.0"
+      ]
+    }
+  },
+  "social": {
+    "github": "https://github.com/yourusername",
+    "linkedin": "https://linkedin.com/in/yourusername",
+    "email": "your.email@example.com"
+  },
+  "api": {
+    "baseUrl": "/api"
+  },
+  "theme": {
+    "default": "default"
+  }
+}
