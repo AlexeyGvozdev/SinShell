@@ -30,19 +30,28 @@ export default function Home() {
     const result = await executor.execute(command);
     
     if (result.type === 'error') {
-      return <span className="text-red-500">{result.output}</span>;
+      return <span className="error-message">{result.output}</span>;
     }
     
     return result.output;
   };
 
   const welcomeMessage = (
-    <div className="mb-4">
-      <div className="text-green-400 font-bold mb-2">
-        Добро пожаловать в SinShell!
+    <div className="terminal-welcome">
+      <div className="title terminal-glow-green">
+        ╔══════════════════════════════════════════════════════════════╗
+        ║                    SinShell Terminal v1.0                    ║
+        ║              Интерактивный терминал-портфолио                ║
+        ╚══════════════════════════════════════════════════════════════╝
       </div>
-      <div className="text-gray-400 mb-2">
-        Введите <span className="text-cyan-400">help</span> для списка доступных команд.
+      <div className="subtitle">
+        <span className="terminal-glow-cyan">Добро пожаловать в SinShell!</span>
+      </div>
+      <div className="subtitle" style={{ marginTop: '0.5rem' }}>
+        Введите <span className="terminal-glow-cyan">help</span> для списка доступных команд.
+      </div>
+      <div className="subtitle" style={{ marginTop: '0.25rem' }}>
+        Попробуйте: <span className="terminal-glow-cyan">about</span>, <span className="terminal-glow-cyan">theme list</span>, <span className="terminal-glow-cyan">clear</span>
       </div>
     </div>
   );
@@ -52,6 +61,7 @@ export default function Home() {
       <Terminal 
         onCommand={handleCommand}
         welcomeMessage={welcomeMessage}
+        title="SinShell Terminal - user@sinshell:~"
       />
     </main>
   );
