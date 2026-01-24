@@ -4,7 +4,6 @@
 
 import {
   ApiClientConfig,
-  ApiResponse,
   ApiRequestOptions,
   HealthResponse,
   DetailedHealthResponse,
@@ -16,7 +15,7 @@ import {
   LicenseResponse,
   ApiRootResponse,
 } from '@/types/api';
-import { ApiError, ApiErrorType } from './utils';
+import { ApiError } from './utils';
 
 /**
  * Класс API клиента
@@ -128,7 +127,7 @@ export class ApiClient {
    */
   private async post<T>(
     endpoint: string,
-    data?: any,
+    data?: unknown,
     options: ApiRequestOptions = {}
   ): Promise<T> {
     return this.request<T>(endpoint, {

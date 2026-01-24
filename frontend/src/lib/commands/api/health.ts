@@ -14,7 +14,7 @@ export const healthCommand: CommandDefinition = {
   description: 'Проверить здоровье сервера',
   usage: 'health',
   examples: ['health'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const health = await apiClient.getHealth();
       return {
@@ -49,7 +49,7 @@ export const healthDetailedCommand: CommandDefinition = {
   description: 'Детальная проверка здоровья сервера',
   usage: 'health-detailed',
   examples: ['health-detailed'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const health = await apiClient.getDetailedHealth();
       
@@ -100,7 +100,7 @@ export const readyCommand: CommandDefinition = {
   description: 'Проверить готовность сервера к работе',
   usage: 'ready',
   examples: ['ready'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const ready = await apiClient.getReadiness();
       return {
@@ -128,7 +128,7 @@ export const liveCommand: CommandDefinition = {
   description: 'Проверить жизнеспособность сервера',
   usage: 'live',
   examples: ['live'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const live = await apiClient.getLiveness();
       return {
@@ -156,7 +156,7 @@ export const pingCommand: CommandDefinition = {
   description: 'Проверить доступность API и время ответа',
   usage: 'ping',
   examples: ['ping'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const isAvailable = await apiClient.isAvailable();
       if (!isAvailable) {

@@ -108,20 +108,6 @@ export const Terminal: React.FC<TerminalProps> = ({
     [onCommand, addToHistory]
   );
 
-  // Очистка истории (пока не используется, но будет нужна для команды clear)
-  const _clearHistory = useCallback(() => {
-    setHistory([]);
-    if (welcomeMessage) {
-      const welcomeEntry: HistoryEntry = {
-        id: `welcome-${Date.now()}`,
-        command: '',
-        output: welcomeMessage,
-        timestamp: new Date(),
-        type: 'output',
-      };
-      setHistory([welcomeEntry]);
-    }
-  }, [welcomeMessage]);
 
   return (
     <div

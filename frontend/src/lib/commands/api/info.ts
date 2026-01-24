@@ -13,7 +13,7 @@ export const infoCommand: CommandDefinition = {
   description: 'Получить информацию о системе',
   usage: 'info',
   examples: ['info'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const info = await apiClient.getSystemInfo();
       
@@ -53,7 +53,7 @@ export const apiInfoCommand: CommandDefinition = {
   description: 'Получить информацию об API',
   usage: 'api-info',
   examples: ['api-info'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const apiInfo = await apiClient.getApiInfo();
       
@@ -91,7 +91,7 @@ export const serverStatusCommand: CommandDefinition = {
   description: 'Получить детальный статус сервера',
   usage: 'server-status',
   examples: ['server-status'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const status = await apiClient.getServerStatus();
       
@@ -151,7 +151,7 @@ export const apiRootCommand: CommandDefinition = {
   description: 'Получить корневую информацию API',
   usage: 'api',
   examples: ['api'],
-  async execute(context: CommandContext): Promise<CommandResult> {
+  async execute(_context: CommandContext): Promise<CommandResult> {
     try {
       const root = await apiClient.getApiRoot();
       

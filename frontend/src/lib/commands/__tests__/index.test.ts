@@ -39,7 +39,7 @@ jest.mock('../executor', () => ({
   })),
 }));
 
-import { helpCommand, clearCommand, aboutCommand, themeCommand } from '../builtins';
+import { helpCommand, clearCommand } from '../builtins';
 import { apiCommands } from '../api';
 
 describe('Commands Index', () => {

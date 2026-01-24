@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import RootLayout, { metadata } from '../layout';
 
 // Мокаем ThemeContext
 jest.mock('../../context/ThemeContext', () => ({
@@ -44,38 +45,28 @@ describe('RootLayout', () => {
   });
 
   it('должен импортироваться без ошибок', () => {
-    expect(() => {
-      require('../layout');
-    }).not.toThrow();
+    expect(RootLayout).toBeDefined();
   });
 
   it('должен иметь правильную структуру экспорта', () => {
-    const layoutModule = require('../layout');
-    
     // Проверяем, что RootLayout экспортируется как default
-    expect(layoutModule.default).toBeDefined();
-    expect(typeof layoutModule.default).toBe('function');
+    expect(RootLayout).toBeDefined();
+    expect(typeof RootLayout).toBe('function');
   });
 
   it('должен быть React компонентом', () => {
-    const RootLayout = require('../layout').default;
-    
     // Проверяем, что это React компонент
     expect(React.isValidElement(<RootLayout>Test</RootLayout>)).toBe(true);
   });
 
   it('должен принимать children prop', () => {
-    const RootLayout = require('../layout').default;
-    
     // Проверяем, что компонент принимает children
-    const element = React.createElement(RootLayout, {}, 'Test Content');
+    const element = React.createElement(RootLayout as any, { children: 'Test Content' });
     expect(element).toBeDefined();
     expect((element as any).props.children).toBe('Test Content');
   });
 
   it('должен работать с разными типами children', () => {
-    const RootLayout = require('../layout').default;
-    
     const testCases = [
       'Text content',
       <div key="1">Simple div</div>,
@@ -87,18 +78,16 @@ describe('RootLayout', () => {
 
     testCases.forEach((children, index) => {
       expect(() => {
-        React.createElement(RootLayout, { key: index }, children);
+        React.createElement(RootLayout as any, { key: index, children });
       }).not.toThrow();
     });
   });
 
   it('должен иметь правильные метаданные', () => {
-    const layoutModule = require('../layout');
-    
     // Проверяем наличие метаданных
-    expect(layoutModule.metadata).toBeDefined();
-    expect(typeof layoutModule.metadata).toBe('object');
-    expect(layoutModule.metadata.title).toBe('SinShell - Terminal Portfolio');
-    expect(layoutModule.metadata.description).toBe('Interactive terminal-style portfolio website');
+    expect(metadata).toBeDefined();
+    expect(typeof metadata).toBe('object');
+    expect(metadata.title).toBe('SinShell - Terminal Portfolio');
+    expect(metadata.description).toBe('Interactive terminal-style portfolio website');
   });
 });

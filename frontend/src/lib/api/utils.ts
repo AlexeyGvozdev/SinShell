@@ -20,13 +20,13 @@ export enum ApiErrorType {
 export class ApiError extends Error {
   public readonly type: ApiErrorType;
   public readonly statusCode?: number;
-  public readonly details?: any;
+  public readonly details?: unknown;
 
   constructor(
     message: string,
     type: ApiErrorType = ApiErrorType.UNKNOWN_ERROR,
     statusCode?: number,
-    details?: any
+    details?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -38,7 +38,7 @@ export class ApiError extends Error {
   /**
    * Создает ошибку сети
    */
-  static network(message: string, details?: any): ApiError {
+  static network(message: string, details?: unknown): ApiError {
     return new ApiError(message, ApiErrorType.NETWORK_ERROR, undefined, details);
   }
 
@@ -52,28 +52,28 @@ export class ApiError extends Error {
   /**
    * Создает ошибку сервера
    */
-  static server(message: string, statusCode: number, details?: any): ApiError {
+  static server(message: string, statusCode: number, details?: unknown): ApiError {
     return new ApiError(message, ApiErrorType.SERVER_ERROR, statusCode, details);
   }
 
   /**
    * Создает ошибку клиента
    */
-  static client(message: string, statusCode: number, details?: any): ApiError {
+  static client(message: string, statusCode: number, details?: unknown): ApiError {
     return new ApiError(message, ApiErrorType.CLIENT_ERROR, statusCode, details);
   }
 
   /**
    * Создает ошибку парсинга
    */
-  static parse(message: string, details?: any): ApiError {
+  static parse(message: string, details?: unknown): ApiError {
     return new ApiError(message, ApiErrorType.PARSE_ERROR, undefined, details);
   }
 
   /**
    * Создает неизвестную ошибку
    */
-  static unknown(message: string, details?: any): ApiError {
+  static unknown(message: string, details?: unknown): ApiError {
     return new ApiError(message, ApiErrorType.UNKNOWN_ERROR, undefined, details);
   }
 
@@ -145,21 +145,21 @@ export const formatBytes = (bytes: number): string => {
 /**
  * Проверяет, является ли ошибка ошибкой сети
  */
-export const isNetworkError = (error: any): boolean => {
+export const isNetworkError = (error: unknown): boolean => {
   return error instanceof ApiError && error.type === ApiErrorType.NETWORK_ERROR;
 };
 
 /**
  * Проверяет, является ли ошибка ошибкой таймаута
  */
-export const isTimeoutError = (error: any): boolean => {
+export const isTimeoutError = (error: unknown): boolean => {
   return error instanceof ApiError && error.type === ApiErrorType.TIMEOUT_ERROR;
 };
 
 /**
  * Проверяет, является ли ошибка ошибкой сервера
  */
-export const isServerError = (error: any): boolean => {
+export const isServerError = (error: unknown): boolean => {
   return error instanceof ApiError && error.type === ApiErrorType.SERVER_ERROR;
 };
 

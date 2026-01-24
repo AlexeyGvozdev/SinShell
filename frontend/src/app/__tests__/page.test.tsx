@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react'
 import Page from '../page'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { createFullCommandExecutor } from '@/lib/commands'
 
 // Мокаем createFullCommandExecutor для тестирования handleCommand
 jest.mock('@/lib/commands', () => ({
@@ -8,6 +9,8 @@ jest.mock('@/lib/commands', () => ({
     execute: jest.fn(),
   })),
 }))
+
+const mockCreateFullCommandExecutor = createFullCommandExecutor as jest.MockedFunction<typeof createFullCommandExecutor>
 
 describe('Home Page', () => {
   beforeEach(() => {
@@ -84,12 +87,11 @@ describe('Home Page', () => {
 
   describe('handleCommand function', () => {
     it('should handle successful command execution', async () => {
-      const { createFullCommandExecutor } = require('@/lib/commands')
       const mockExecute = jest.fn().mockResolvedValue({
         type: 'success',
         output: 'Command executed successfully'
       })
-      createFullCommandExecutor.mockReturnValue({
+      mockCreateFullCommandExecutor.mockReturnValue({
         execute: mockExecute
       })
 
@@ -103,16 +105,15 @@ describe('Home Page', () => {
       // Находим компонент Terminal и вызываем его onCommand
       const terminalElement = container.querySelector('[data-testid="terminal"]')
       expect(terminalElement).toBeInTheDocument()
-      expect(createFullCommandExecutor).toHaveBeenCalledTimes(1)
+      expect(mockCreateFullCommandExecutor).toHaveBeenCalledTimes(1)
     })
 
     it('should handle error command execution', async () => {
-      const { createFullCommandExecutor } = require('@/lib/commands')
       const mockExecute = jest.fn().mockResolvedValue({
         type: 'error',
         output: 'Command failed'
       })
-      createFullCommandExecutor.mockReturnValue({
+      mockCreateFullCommandExecutor.mockReturnValue({
         execute: mockExecute
       })
 
@@ -126,19 +127,17 @@ describe('Home Page', () => {
       // Находим компонент Terminal
       const terminalElement = container.querySelector('[data-testid="terminal"]')
       expect(terminalElement).toBeInTheDocument()
-      expect(createFullCommandExecutor).toHaveBeenCalledTimes(1)
+      expect(mockCreateFullCommandExecutor).toHaveBeenCalledTimes(1)
     })
 
     it('should use useMemo for executor optimization', () => {
-      const { createFullCommandExecutor } = require('@/lib/commands')
-      
       render(
         <ThemeProvider>
           <Page />
         </ThemeProvider>
       )
 
-      expect(createFullCommandExecutor).toHaveBeenCalledTimes(1)
+      expect(mockCreateFullCommandExecutor).toHaveBeenCalledTimes(1)
     })
   })
 })

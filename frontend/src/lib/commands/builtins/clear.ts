@@ -10,7 +10,7 @@ export const clearCommand: CommandDefinition = {
   usage: 'clear',
   aliases: ['cls'],
   
-  execute: (_context: CommandContext): CommandResult => {
+  execute: (__context: CommandContext): CommandResult => {
     // Команда clear обрабатывается специальным образом в Terminal компоненте
     // Здесь мы просто возвращаем специальный маркер
     return {
