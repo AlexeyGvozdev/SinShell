@@ -15,7 +15,7 @@ jobs:
 
       - name: Deploy Serverless Container
         id: deploy-sls-container
-        uses: yc-actions/yc-sls-container-deploy@v1
+        uses: yc-actions/yc-sls-container-deploy@v4
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           container-name: sinshell-app
@@ -27,8 +27,6 @@ jobs:
           revision-concurrency: 8
           revision-image-url: cr.yandex.io/${{ secrets.YC_REGISTRY_ID }}/sinshell:${{ github.sha }}
           revision-execution-timeout: 30
-          min-instances: 0
-          max-instances: 5
           environment: |
             NODE_ENV=production
             PORT=5000
