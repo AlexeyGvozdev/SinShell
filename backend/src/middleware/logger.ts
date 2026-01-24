@@ -186,9 +186,6 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
       responseTime: duration,
     };
 
-    const level: LogLevel = res.statusCode >= 400 ? 'error' : 
-                          res.statusCode >= 300 ? 'warn' : 'info';
-
     logger.info(
       `Request completed: ${req.method} ${req.url} ${res.statusCode} - ${duration}ms`,
       logContext
