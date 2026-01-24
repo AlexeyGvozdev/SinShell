@@ -3,6 +3,7 @@
  */
 
 import { clearCommand } from '../clear';
+import { CommandResult } from '@/types';
 
 describe('clearCommand', () => {
   it('должна быть зарегистрирована с правильными свойствами', () => {
@@ -16,7 +17,7 @@ describe('clearCommand', () => {
       args: [],
       flags: {},
       rawInput: 'clear',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('success');
     expect(result.exitCode).toBe(0);

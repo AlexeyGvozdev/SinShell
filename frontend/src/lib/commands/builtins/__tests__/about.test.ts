@@ -3,6 +3,7 @@
  */
 
 import { aboutCommand } from '../about';
+import { CommandResult } from '@/types';
 
 describe('aboutCommand', () => {
   it('должна быть зарегистрирована с правильными свойствами', () => {
@@ -15,7 +16,7 @@ describe('aboutCommand', () => {
       args: [],
       flags: {},
       rawInput: 'about',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('success');
     expect(result.exitCode).toBe(0);

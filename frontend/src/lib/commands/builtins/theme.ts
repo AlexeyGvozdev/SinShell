@@ -49,7 +49,8 @@ export const themeCommand: CommandDefinition = {
     const themeName = args[0];
 
     // Проверяем что тема существует
-    if (!availableThemes.includes(themeName as any)) {
+    const themeExists = availableThemes.some(t => t === themeName);
+    if (!themeExists) {
       return {
         output: React.createElement('div', null,
           React.createElement('div', null, `Тема "${themeName}" не найдена`),

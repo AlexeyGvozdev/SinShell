@@ -3,6 +3,7 @@
  */
 
 import { themeCommand } from '../theme';
+import { CommandResult } from '@/types';
 
 describe('themeCommand', () => {
   it('должна быть зарегистрирована с правильными свойствами', () => {
@@ -15,7 +16,7 @@ describe('themeCommand', () => {
       args: [],
       flags: {},
       rawInput: 'theme',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('info');
     expect(result.exitCode).toBe(0);
@@ -26,7 +27,7 @@ describe('themeCommand', () => {
       args: ['default'],
       flags: {},
       rawInput: 'theme default',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('success');
     expect(result.exitCode).toBe(0);
@@ -37,7 +38,7 @@ describe('themeCommand', () => {
       args: ['nonexistent'],
       flags: {},
       rawInput: 'theme nonexistent',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('error');
     expect(result.exitCode).toBe(1);

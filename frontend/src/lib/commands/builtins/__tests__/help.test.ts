@@ -4,7 +4,7 @@
 
 import { helpCommand } from '../help';
 import { commandRegistry } from '../../registry';
-import { CommandDefinition } from '@/types';
+import { CommandDefinition, CommandResult } from '@/types';
 
 describe('helpCommand', () => {
   const mockCommand: CommandDefinition = {
@@ -38,7 +38,7 @@ describe('helpCommand', () => {
       args: [],
       flags: {},
       rawInput: 'help',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('success');
     expect(result.exitCode).toBe(0);
@@ -51,7 +51,7 @@ describe('helpCommand', () => {
       args: ['test'],
       flags: {},
       rawInput: 'help test',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('success');
     expect(result.exitCode).toBe(0);
@@ -62,7 +62,7 @@ describe('helpCommand', () => {
       args: ['nonexistent'],
       flags: {},
       rawInput: 'help nonexistent',
-    }) as any;
+    }) as CommandResult;
 
     expect(result.type).toBe('error');
     expect(result.exitCode).toBe(1);

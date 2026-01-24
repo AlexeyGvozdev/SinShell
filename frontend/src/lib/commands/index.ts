@@ -24,6 +24,7 @@ export function initializeBuiltinCommands(): void {
  * Создает экземпляр CommandExecutor с зарегистрированными командами
  */
 export function createCommandExecutor() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { CommandExecutor } = require('./executor');
   return new CommandExecutor(commandRegistry);
 }
