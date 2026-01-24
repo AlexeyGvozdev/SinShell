@@ -17,6 +17,8 @@ export interface TerminalInputProps {
   onHistoryUp?: () => string | null;
   onHistoryDown?: () => string | null;
   onResetHistoryNavigation?: () => void;
+  // Новые пропсы для автокомплита
+  onAutocomplete?: (input: string, cursorPosition: number) => string | null;
 }
 
 /**
@@ -35,6 +37,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   onHistoryUp,
   onHistoryDown,
   onResetHistoryNavigation,
+  onAutocomplete,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -73,6 +76,19 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
         } else {
           // Если следующей команды нет, очищаем ввод
           onChange('');
+        }
+      }
+      return;
+    }
+
+    // Обработка Tab для автокомплита
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      if (onAutocomplete && inputRef.current && value.trim().length > 0) {
+        const cursorPosition = inputRef.current.selectionStart || 0;
+        const completedValue = onAutocomplete(value, cursorPosition);
+        if (completedValue !== null) {
+          onChange(completedValue);
         }
       }
       return;
