@@ -30,9 +30,8 @@ jobs:
           revision-execution-timeout: 60
           revision-env: |
             NODE_ENV=production
-            PORT=5000
             HOST=0.0.0.0
-            NEXT_PUBLIC_API_URL=https://${{ secrets.APP_DOMAIN }}
+            NEXT_PUBLIC_API_URL=https://${{ secrets.APP_DOMAIN }}/api/v1
             NEXT_PUBLIC_APP_NAME=SinShell
             LOG_LEVEL=info
 
