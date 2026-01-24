@@ -1,28 +1,13 @@
 'use client';
 
 import { Terminal } from '@/components/Terminal';
-import { CommandExecutor } from '@/lib/commands/executor';
-import { DefaultCommandRegistry } from '@/lib/commands/registry';
-import { helpCommand } from '@/lib/commands/builtins/help';
-import { clearCommand } from '@/lib/commands/builtins/clear';
-import { aboutCommand } from '@/lib/commands/builtins/about';
-import { themeCommand } from '@/lib/commands/builtins/theme';
+import { createFullCommandExecutor } from '@/lib/commands';
 import { useMemo } from 'react';
 
 export default function Home() {
-  // Создаем реестр команд и регистрируем встроенные команды
-  const { registry, executor } = useMemo(() => {
-    const reg = new DefaultCommandRegistry();
-    
-    // Регистрируем встроенные команды
-    reg.register(helpCommand);
-    reg.register(clearCommand);
-    reg.register(aboutCommand);
-    reg.register(themeCommand);
-    
-    const exec = new CommandExecutor(reg);
-    
-    return { registry: reg, executor: exec };
+  // Создаем executor со всеми командами (встроенными + API)
+  const executor = useMemo(() => {
+    return createFullCommandExecutor();
   }, []);
 
   // Обработчик команд
@@ -51,14 +36,17 @@ export default function Home() {
         Введите <span className="terminal-glow-cyan">help</span> для списка доступных команд.
       </div>
       <div className="subtitle" style={{ marginTop: '0.25rem' }}>
-        Попробуйте: <span className="terminal-glow-cyan">about</span>, <span className="terminal-glow-cyan">theme list</span>, <span className="terminal-glow-cyan">clear</span>
+        Попробуйте: <span className="terminal-glow-cyan">about</span>, <span className="terminal-glow-cyan">theme list</span>, <span className="terminal-glow-cyan">ping</span>, <span className="terminal-glow-cyan">health</span>
+      </div>
+      <div className="subtitle" style={{ marginTop: '0.25rem' }}>
+        API команды: <span className="terminal-glow-cyan">info</span>, <span className="terminal-glow-cyan">project</span>, <span className="terminal-glow-cyan">license</span>
       </div>
     </div>
   );
 
   return (
     <main className="min-h-screen">
-      <Terminal 
+      <Terminal
         onCommand={handleCommand}
         welcomeMessage={welcomeMessage}
         title="SinShell Terminal - user@sinshell:~"

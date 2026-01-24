@@ -114,6 +114,71 @@ describe('CommandExecutor', () => {
         exitCode: 0,
       });
     });
+
+    it('должен обрабатывать не-Error объекты в catch блоке', async () => {
+      registry.register({
+        name: 'string-error',
+        description: 'String error command',
+        execute: jest.fn(() => {
+          throw 'String error message';
+        }),
+      });
+      
+      const result = await executor.execute('string-error');
+      
+      expect(result.type).toBe('error');
+      expect(result.exitCode).toBe(1);
+      expect(mockCommand.execute).not.toHaveBeenCalled();
+    });
+
+    it('должен обрабатывать null/undefined ошибки', async () => {
+      registry.register({
+        name: 'null-error',
+        description: 'Null error command',
+        execute: jest.fn(() => {
+          throw null;
+        }),
+      });
+      
+      const result = await executor.execute('null-error');
+      
+      expect(result.type).toBe('error');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('должен обрабатывать объектные ошибки', async () => {
+      registry.register({
+        name: 'object-error',
+        description: 'Object error command',
+        execute: jest.fn(() => {
+          throw { code: 'CUSTOM_ERROR', message: 'Custom error' };
+        }),
+      });
+      
+      const result = await executor.execute('object-error');
+      
+      expect(result.type).toBe('error');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('должен правильно обрабатывать whitespace команды', async () => {
+      const result = await executor.execute('   \t\n   ');
+      
+      expect(result.type).toBe('info');
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain('Введите команду');
+    });
+
+    it('должен передавать смешанные аргументы и флаги', async () => {
+      registry.register(mockCommand);
+      await executor.execute('test arg1 --flag1 arg2 -f arg3');
+      
+      expect(mockCommand.execute).toHaveBeenCalledWith({
+        args: ['arg1', 'arg2'],
+        flags: { flag1: true, f: 'arg3' },
+        rawInput: 'test arg1 --flag1 arg2 -f arg3',
+      });
+    });
   });
 
   describe('hasCommand', () => {
