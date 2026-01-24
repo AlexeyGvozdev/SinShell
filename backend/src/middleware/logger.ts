@@ -100,7 +100,7 @@ export function createLogContext(req: Request): LogContext {
     context.userAgent = req.get('User-Agent')!;
   }
   
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = req.ip || req.socket?.remoteAddress;
   if (ip) {
     context.ip = ip;
   }
