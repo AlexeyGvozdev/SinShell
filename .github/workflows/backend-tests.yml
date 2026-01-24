@@ -40,13 +40,16 @@ jobs:
         working-directory: ./backend
         run: npm ci
       
+      - name: Create test environment file
+        working-directory: ./backend
+        run: |
+          if [ ! -f .env.test ]; then
+            cp .env.example .env.test
+          fi
+      
       - name: Run linter
         working-directory: ./backend
         run: npm run lint --if-present || echo "Linter not configured"
-      
-      - name: Run tests
-        working-directory: ./backend
-        run: npm test
       
       - name: Run tests with coverage
         working-directory: ./backend

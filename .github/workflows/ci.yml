@@ -48,6 +48,13 @@ jobs:
         working-directory: ./backend
         run: npm ci
       
+      - name: Create test environment file
+        working-directory: ./backend
+        run: |
+          if [ ! -f .env.test ]; then
+            cp .env.example .env.test
+          fi
+      
       - name: Run tests with coverage
         working-directory: ./backend
         run: npm run test:coverage
