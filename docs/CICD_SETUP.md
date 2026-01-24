@@ -2,21 +2,19 @@
 
 ## 📋 Обзор
 
-Этот документ описывает настройку автоматического развертывания приложения SinShell в Yandex Cloud при мерже в ветку `main` с использованием GitHub Actions.
+Этот документ описывает настройку автоматического развертывания приложения SinShell в Yandex Cloud с использованием GitHub Actions и официальных экшенов Yandex Cloud.
 
 ## 🔄 Как работает CI/CD пайплайн
 
 ```
-Push/Pull Request → GitHub Actions → Тесты → Сборка Docker → Деплой → Yandex Cloud
+Push/Pull Request → GitHub Actions → yc-actions/yc-sls-container-deploy → Yandex Cloud
 ```
 
 ### Этапы пайплайна:
 
-1. **Триггер**: Push в `main` или закрытие PR в `main`
-2. **Тестирование**: Линтинг, тесты, сборка
-3. **Сборка**: Docker образ с тегом коммита
-4. **Развертывание**: Обновление приложения в Yandex Cloud
-5. **Уведомление**: Результаты развертывания
+1. **Триггер**: Push в `main` или PR в `main`
+2. **Развертывание**: Использование официального экшена Yandex Cloud
+3. **Уведомление**: Результаты развертывания
 
 ---
 
@@ -32,32 +30,27 @@ Push/Pull Request → GitHub Actions → Тесты → Сборка Docker → 
 
 ### Шаг 2: Настройка прав доступа
 
-Создайте роль с необходимыми правами:
+Назначьте необходимые роли сервисному аккаунту:
 
 ```bash
-# Создание роли
-yc iam role create \
-  --name sinshell-deployer \
-  --description "Role for SinShell deployment"
-
-# Назначение прав
-yc iam role update sinshell-deployer \
-  --add-permission container-registry.images.pull \
-  --add-permission container-registry.images.push \
-  --add-permission serverless.containers.update \
-  --add-permission serverless.containers.get
-```
-
-Назначьте роль сервисному аккаунту:
-
-```bash
+# Назначение ролей сервисному аккаунту
 yc resource-manager folder add-access-binding \
   --name your-folder-name \
-  --role sinshell-deployer \
+  --role container-registry.images.pull \
+  --service-account-name github-actions-deployer
+
+yc resource-manager folder add-access-binding \
+  --name your-folder-name \
+  --role container-registry.images.push \
+  --service-account-name github-actions-deployer
+
+yc resource-manager folder add-access-binding \
+  --name your-folder-name \
+  --role serverless.containers.admin \
   --service-account-name github-actions-deployer
 ```
 
-### Шаг 3: Создание API ключа
+### Шаг 3: Создание авторизованного ключа
 
 ```bash
 yc iam key create \
@@ -75,6 +68,45 @@ yc config get cloud-id
 
 # ID каталога
 yc config get folder-id
+
+# ID сервисного аккаунта
+yc iam service-account get --name github-actions-deployer --format json | jq -r '.id'
+
+#### Как узнать YC_SERVICE_ACCOUNT_ID:
+
+Есть несколько способов получить ID сервисного аккаунта:
+
+**Способ 1: Через CLI (рекомендуется)**
+```bash
+yc iam service-account get --name github-actions-deployer --format json | jq -r '.id'
+```
+
+**Способ 2: Через CLI без jq**
+```bash
+yc iam service-account get --name github-actions-deployer
+```
+Найдите в выводе поле `id` (выглядит как `aje1234567890abcdef`)
+
+**Способ 3: Список всех сервисных аккаунтов**
+```bash
+yc iam service-account list --format json | jq -r '.[] | select(.name == "github-actions-deployer") | .id'
+```
+
+**Способ 4: Через веб-консоль**
+1. Откройте Yandex Cloud консоль
+2. Перейдите в ваш каталог
+3. Сервисные аккаунты → найдите `github-actions-deployer`
+4. ID будет указан в деталях аккаунта
+
+**Пример вывода команды:**
+```
+id: aje1234567890abcdef
+folder_id: b1g1234567890abcdef
+created_at: "2024-01-01T00:00:00Z"
+name: github-actions-deployer
+description: "Account for GitHub Actions CI/CD deployment"
+status: ACTIVE
+```
 
 # Проверьте есть ли реестр контейнеров
 yc container registry list --format json
@@ -100,23 +132,12 @@ yc serverless container get --name sinshell-app --format json | jq -r '.status[0
 
 | Secret Name | Description | Value |
 |-------------|-------------|-------|
-| `YC_IAM_TOKEN` | IAM токен для аутентификации | Содержимое `key.json` или IAM токен |
+| `YC_SA_JSON_CREDENTIALS` | JSON с авторизованным ключом | Содержимое `key.json` |
 | `YC_CLOUD_ID` | ID вашего облака | `b1gXXXXXXXXXXXXXXXX` |
 | `YC_FOLDER_ID` | ID вашего каталога | `b1gXXXXXXXXXXXXXXXX` |
 | `YC_REGISTRY_ID` | ID реестра контейнеров | `crpXXXXXXXXXXXXXXXX` |
+| `YC_SERVICE_ACCOUNT_ID` | ID сервисного аккаунта | `ajeXXXXXXXXXXXXXXXX` |
 | `APP_DOMAIN` | Домен приложения | Получите после первого развертывания |
-
-### Получение IAM токена для GitHub Secret
-
-```bash
-# Создание статического ключа доступа
-yc iam access-key create \
-  --service-account-name github-actions-deployer \
-  --format json > access-key.json
-
-# Или получение временного IAM токена
-yc iam create-token --service-account-name github-actions-deployer
-```
 
 ---
 
@@ -126,17 +147,11 @@ yc iam create-token --service-account-name github-actions-deployer
 
 ### Jobs:
 
-1. **test**:
-   - Установка зависимостей
-   - Линтинг кода
-   - Запуск тестов с покрытием
-   - Сборка фронтенда и бэкенда
-
-2. **deploy**:
-   - Сборка Docker образа
-   - Загрузка в Yandex Container Registry
-   - Обновление приложения в Yandex Cloud
-   - Уведомление о результате
+1. **deploy**:
+   - Использует официальный экшен `yc-actions/yc-sls-container-deploy@v1`
+   - Автоматически собирает и загружает Docker образ
+   - Обновляет Serverless Container
+   - Передает переменные окружения
 
 ### Триггеры:
 
@@ -146,7 +161,33 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-    types: [closed]
+```
+
+### Конфигурация развертывания:
+
+```yaml
+- name: Deploy Serverless Container
+  uses: yc-actions/yc-sls-container-deploy@v1
+  with:
+    yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+    container-name: sinshell-app
+    folder-id: ${{ secrets.YC_FOLDER_ID }}
+    revision-service-account-id: ${{ secrets.YC_SERVICE_ACCOUNT_ID }}
+    revision-cores: 1
+    revision-memory: 256MB
+    revision-core-fraction: 100
+    revision-concurrency: 8
+    revision-image-url: cr.yandex.io/${{ secrets.YC_REGISTRY_ID }}/sinshell:${{ github.sha }}
+    revision-execution-timeout: 30
+    environment: |
+      NODE_ENV=production
+      PORT=5000
+      HOST=0.0.0.0
+      NEXT_PUBLIC_API_URL=https://${{ secrets.APP_DOMAIN }}
+      NEXT_PUBLIC_APP_NAME=SinShell
+      LOG_LEVEL=info
+    min-instances: 0
+    max-instances: 5
 ```
 
 ---
@@ -167,7 +208,7 @@ on:
 1. Сделайте коммит и push в `main`:
 ```bash
 git add .
-git commit -m "feat: add CI/CD pipeline"
+git commit -m "feat: add CI/CD pipeline with yc-actions"
 git push origin main
 ```
 
@@ -190,8 +231,8 @@ yc serverless container logs --name sinshell-app --follow
 
 **Проблема: Ошибка аутентификации**
 ```bash
-# Проверьте IAM токен
-yc iam create-token --service-account-name github-actions-deployer
+# Проверьте авторизованный ключ
+yc iam key list --service-account-name github-actions-deployer
 ```
 
 **Проблема: Нет прав доступа**
@@ -200,10 +241,10 @@ yc iam create-token --service-account-name github-actions-deployer
 yc resource-manager folder list-access-bindings --name your-folder-name
 ```
 
-**Проблема: Ошибка сборки**
-- Проверьте логи в GitHub Actions
-- Убедитесь что все тесты проходят локально
-- Проверьте Dockerfile
+**Проблема: Ошибка экшена yc-actions**
+- Убедитесь что все секреты правильно настроены
+- Проверьте формат JSON в `YC_SA_JSON_CREDENTIALS`
+- Убедитесь что сервисный аккаунт имеет необходимые права
 
 ---
 
@@ -225,35 +266,33 @@ on:
     branches: [ main ]
 ```
 
-### Кэширование
+### Переменные окружения
 
-Пайплайн использует кэширование для ускорения сборки:
+Можно добавлять дополнительные переменные окружения:
 
 ```yaml
-- name: Cache Docker layers
-  uses: actions/cache@v3
-  with:
-    path: /tmp/.buildx-cache
-    key: ${{ runner.os }}-buildx-${{ github.sha }}
-    restore-keys: |
-      ${{ runner.os }}-buildx-
+environment: |
+  NODE_ENV=production
+  PORT=5000
+  HOST=0.0.0.0
+  NEXT_PUBLIC_API_URL=https://${{ secrets.APP_DOMAIN }}
+  NEXT_PUBLIC_APP_NAME=SinShell
+  LOG_LEVEL=info
+  CUSTOM_VAR=value
 ```
 
-### Уведомления
+### Настройка ресурсов
 
-Можно добавить уведомления в Telegram/Slack:
+Измените параметры контейнера под ваши нужды:
 
 ```yaml
-- name: Notify Telegram
-  if: always()
-  uses: appleboy/telegram-action@master
-  with:
-    to: ${{ secrets.TELEGRAM_CHAT_ID }}
-    token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-    message: |
-      🚀 Deployment ${{ job.status }}!
-      📦 Commit: ${{ github.sha }}
-      🌐 URL: https://${{ secrets.APP_DOMAIN }}
+revision-cores: 2                    # Количество ядер
+revision-memory: 512MB               # Память
+revision-core-fraction: 100          # Доля ядра
+revision-concurrency: 16             # Конкурентность
+revision-execution-timeout: 60       # Таймаут выполнения
+min-instances: 1                     # Минимальное количество инстансов
+max-instances: 10                    # Максимальное количество инстансов
 ```
 
 ---
@@ -263,7 +302,7 @@ on:
 ### Рекомендации
 
 1. **Минимальные права**: Давайте сервисному аккаунту только необходимые права
-2. **Ротация ключей**: Регулярно обновляйте IAM токены
+2. **Ротация ключей**: Регулярно обновляйте авторизованные ключи
 3. **Аудит**: Включите логирование действий сервисного аккаунта
 4. **Ветвление**: Используйте separate ветки для staging и production
 
@@ -273,39 +312,38 @@ on:
 # Использование Yandex Lockbox для хранения секретов
 yc lockbox payload create \
   --name github-secrets \
-  --payload '{"YC_IAM_TOKEN": "your-token"}'
+  --payload '{"YC_SA_JSON_CREDENTIALS": "your-json-key"}'
 ```
 
 ---
 
 ## 📊 Оптимизация
 
-### Ускорение сборки
+### Ускорение развертывания
 
-1. **Параллельные тесты**:
-```yaml
-strategy:
-  matrix:
-    node-version: [18.x]
-```
+1. **Кэширование Docker**: Экшен автоматически кэширует слои
+2. **Параллельные деплои**: Можно настроить деплой в разные окружения
+3. **Оптимизация Docker**: Используйте многоэтапную сборку
 
-2. **Кэширование зависимостей**:
-```yaml
-- name: Cache node modules
-  uses: actions/cache@v3
-  with:
-    path: |
-      ~/.npm
-      frontend/node_modules
-      backend/node_modules
-```
+### Оптимизация Docker
 
-3. **Оптимизация Docker**:
 ```dockerfile
 # Многоэтапная сборка с кэшированием
 FROM node:18-alpine AS deps
 COPY package*.json ./
 RUN npm ci --only=production
+
+FROM node:18-alpine AS builder
+COPY --from=deps /node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine AS runner
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=deps /node_modules ./node_modules
+EXPOSE 5000
+CMD ["node", "dist/index.js"]
 ```
 
 ---
@@ -319,10 +357,12 @@ RUN npm ci --only=production
 ```yaml
 - name: Rollback on failure
   if: failure()
-  run: |
-    yc serverless container update \
-      --name sinshell-app \
-      --image cr.yandex.io/${{ secrets.YC_REGISTRY_ID }}/sinshell:latest
+  uses: yc-actions/yc-sls-container-deploy@v1
+  with:
+    yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+    container-name: sinshell-app
+    folder-id: ${{ secrets.YC_FOLDER_ID }}
+    revision-image-url: cr.yandex.io/${{ secrets.YC_REGISTRY_ID }}/sinshell:latest
 ```
 
 ### Ручной rollback
@@ -346,6 +386,14 @@ yc serverless container update \
 - [GitHub Actions documentation](https://docs.github.com/en/actions)
 - [Yandex Cloud Container Registry](https://cloud.yandex.ru/docs/container-registry/)
 - [Yandex Cloud Serverless Containers](https://cloud.yandex.ru/docs/serverless-containers/)
+- [yc-actions GitHub organization](https://github.com/yc-actions)
+
+### Официальные экшены Yandex Cloud
+
+- [yc-actions/yc-sls-container-deploy](https://github.com/yc-actions/yc-sls-container-deploy)
+- [yc-actions/yc-coi-deploy](https://github.com/yc-actions/yc-coi-deploy)
+- [yc-actions/yc-sls-function](https://github.com/yc-actions/yc-sls-function)
+- [yc-actions/yc-lockbox](https://github.com/yc-actions/yc-lockbox)
 
 ### Траблшутинг
 
@@ -353,7 +401,27 @@ yc serverless container update \
 2. **Проверьте права** сервисного аккаунта
 3. **Проверьте переменные окружения** в GitHub Secrets
 4. **Проверьте статус приложения** в Yandex Cloud консоли
+5. **Используйте официальные экшены** yc-actions для лучшей совместимости
 
 ---
 
-**🎉 Готово! Теперь ваше приложение будет автоматически развертываться при каждом мерже в ветку `main`!**
+## 🆕 Преимущества нового подхода
+
+### По сравнению с ручным развертыванием:
+
+1. **Официальные экшены**: Используйте поддерживаемые Yandex Cloud экшены
+2. **Автоматическая сборка**: Docker образ собирается автоматически
+3. **Простота конфигурации**: Меньше кода, больше функциональности
+4. **Надежность**: Официальная поддержка и регулярные обновления
+5. **Безопасность**: Лучшие практики аутентификации
+
+### По сравнению со старым CI/CD:
+
+1. **Убран линтинг**: Фокус только на развертывании
+2. **Убраны тесты**: CI отвечает за тесты, CD - за развертывание
+3. **Простота**: Один job вместо нескольких
+4. **Скорость**: Быстрое развертывание без лишних проверок
+
+---
+
+**🎉 Готово! Теперь ваше приложение будет автоматически развертываться при каждом push в ветку `main` с использованием официальных экшенов Yandex Cloud!**
