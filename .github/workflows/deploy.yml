@@ -1,16 +1,17 @@
 name: Deploy to Yandex Cloud
 
 on:
-  push:
-    branches: [ develop ]
   pull_request:
-    branches: [ develop ]
+    branches:
+      - develop
+  push:
+    branches:
+      - develop
     # types: [closed]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
     - uses: actions/checkout@v4
