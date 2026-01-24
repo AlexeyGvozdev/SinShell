@@ -26,7 +26,7 @@ jobs:
           revision-memory: 256MB
           revision-core-fraction: 100
           revision-concurrency: 8
-          revision-image-url: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/sinshell:${{ github.sha }}
+          revision-image-url: registry.cloud.yandex.net/${{ secrets.YC_REGISTRY_ID }}/sinshell:${{ github.sha }}
           revision-execution-timeout: 60
           revision-env: |
             NODE_ENV=production
@@ -40,7 +40,7 @@ jobs:
           echo "🚀 Deployment completed successfully!"
           echo "📦 Container: sinshell-app"
           echo "🌐 App URL: https://${{ secrets.APP_DOMAIN }}"
-          echo "🔧 Image: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/sinshell:${{ github.sha }}"
+          echo "🔧 Image: registry.cloud.yandex.net/${{ secrets.YC_REGISTRY_ID }}/sinshell:${{ github.sha }}"
 
       - name: Notify deployment
         if: always()
