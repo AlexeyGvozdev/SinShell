@@ -27,7 +27,7 @@ jobs:
           revision-concurrency: 8
           revision-image-url: cr.yandex.io/${{ secrets.YC_REGISTRY_ID }}/sinshell:${{ github.sha }}
           revision-execution-timeout: 30
-          environment: |
+          revision-env: |
             NODE_ENV=production
             PORT=5000
             HOST=0.0.0.0
