@@ -55,7 +55,7 @@ export const apiInfoCommand: CommandDefinition = {
   usage: 'api-info',
   examples: ['api-info'],
   category: 'api',
-  async execute(_context: CommandContext): Promise<CommandResult> {
+  async execute(_c: CommandContext): Promise<CommandResult> {
     try {
       const apiInfo = await apiClient.getApiInfo();
       

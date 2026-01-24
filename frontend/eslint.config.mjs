@@ -14,6 +14,12 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
+    // Правила для всех файлов
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    },
+  },
+  {
     // Правила для тестовых файлов
     files: ["**/__tests__/**/*", "**/*.test.*", "**/*.spec.*"],
     rules: {
