@@ -215,4 +215,157 @@ describe('Terminal', () => {
       expect(screen.getByText('Output 2')).toBeInTheDocument();
     });
   });
+
+  describe('навигация по истории команд', () => {
+    it('должен обрабатывать навигацию вверх по истории', async () => {
+      const mockOnCommand = jest.fn().mockResolvedValue('Output');
+      renderWithTheme(<Terminal onCommand={mockOnCommand} />);
+      
+      const input = screen.getByTestId('terminal-input') as HTMLInputElement;
+      
+      // Выполняем команду для добавления в историю
+      fireEvent.change(input, { target: { value: 'test-command' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      
+      await waitFor(() => {
+        expect(input.value).toBe('');
+      });
+      
+      // Нажимаем стрелку вверх для навигации по истории
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      
+      // Значение должно измениться на последнюю команду из истории
+      expect(input.value).toBe('test-command');
+    });
+
+    it('должен обрабатывать навигацию вниз по истории', async () => {
+      const mockOnCommand = jest.fn().mockResolvedValue('Output');
+      renderWithTheme(<Terminal onCommand={mockOnCommand} />);
+      
+      const input = screen.getByTestId('terminal-input') as HTMLInputElement;
+      
+      // Выполняем команду для добавления в историю
+      fireEvent.change(input, { target: { value: 'test-command' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      
+      await waitFor(() => {
+        expect(input.value).toBe('');
+      });
+      
+      // Нажимаем стрелку вверх для перехода к истории
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('test-command');
+      
+      // Нажимаем стрелку вниз для возврата
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input.value).toBe('');
+    });
+
+    it('должен сбрасывать навигацию при вводе нового текста', async () => {
+      const mockOnCommand = jest.fn().mockResolvedValue('Output');
+      renderWithTheme(<Terminal onCommand={mockOnCommand} />);
+      
+      const input = screen.getByTestId('terminal-input') as HTMLInputElement;
+      
+      // Выполняем команду для добавления в историю
+      fireEvent.change(input, { target: { value: 'test-command' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      
+      await waitFor(() => {
+        expect(input.value).toBe('');
+      });
+      
+      // Нажимаем стрелку вверх для перехода к истории
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('test-command');
+      
+      // Вводим новый текст - навигация должна сброситься
+      fireEvent.change(input, { target: { value: 'new-text' } });
+      
+      // Нажимаем стрелку вверх снова - должно перейти к последней команде
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('test-command');
+    });
+
+    it('должен обрабатывать навигацию по истории корректно', async () => {
+      const mockOnCommand = jest.fn().mockResolvedValue('Output');
+      renderWithTheme(<Terminal onCommand={mockOnCommand} />);
+      
+      const input = screen.getByTestId('terminal-input');
+      
+      // Выполняем команду для добавления в историю
+      fireEvent.change(input, { target: { value: 'test-command' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      
+      await waitFor(() => {
+        expect(screen.getByText('test-command')).toBeInTheDocument();
+      });
+      
+      // Нажимаем стрелку вверх - должно восстановить команду из истории
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      
+      // Значение должно измениться на последнюю команду из истории
+      expect((input as HTMLInputElement).value).toBe('test-command');
+    });
+
+    it('должен корректно обрабатывать пустую историю', () => {
+      renderWithTheme(<Terminal />);
+      
+      const input = screen.getByTestId('terminal-input') as HTMLInputElement;
+      
+      // Нажимаем стрелки в пустой истории
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('');
+      
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input.value).toBe('');
+    });
+
+    it('должен корректно обрабатывать несколько команд в истории', async () => {
+      const mockOnCommand = jest.fn()
+        .mockResolvedValueOnce('Output 1')
+        .mockResolvedValueOnce('Output 2')
+        .mockResolvedValueOnce('Output 3');
+      
+      renderWithTheme(<Terminal onCommand={mockOnCommand} />);
+      
+      const input = screen.getByTestId('terminal-input') as HTMLInputElement;
+      
+      // Добавляем несколько команд в историю
+      const commands = ['cmd1', 'cmd2', 'cmd3'];
+      
+      for (const cmd of commands) {
+        fireEvent.change(input, { target: { value: cmd } });
+        fireEvent.keyDown(input, { key: 'Enter' });
+        
+        await waitFor(() => {
+          expect(input.value).toBe('');
+        });
+      }
+      
+      // Навигация по истории: должны получать команды в обратном порядке
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('cmd3');
+      
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('cmd2');
+      
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('cmd1');
+      
+      // Дальнейшая навигация вверх не должна изменять значение
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(input.value).toBe('cmd1');
+      
+      // Навигация вниз
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input.value).toBe('cmd2');
+      
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input.value).toBe('cmd3');
+      
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(input.value).toBe('');
+    });
+  });
 });

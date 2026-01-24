@@ -11,6 +11,9 @@ describe('TerminalInput', () => {
   const mockOnChange = jest.fn();
   const mockOnSubmit = jest.fn();
   const mockOnKeyDown = jest.fn();
+  const mockOnHistoryUp = jest.fn();
+  const mockOnHistoryDown = jest.fn();
+  const mockOnResetHistoryNavigation = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -201,5 +204,191 @@ describe('TerminalInput', () => {
     const prompt = container.querySelector('.terminal-prompt');
     expect(prompt).toBeInTheDocument();
     expect(prompt).toHaveTextContent('$');
+  });
+
+  describe('навигация по истории команд', () => {
+    it('должен вызывать onHistoryUp при нажатии ArrowUp', () => {
+      mockOnHistoryUp.mockReturnValue('previous command');
+      
+      render(
+        <TerminalInput
+          value=""
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      
+      expect(mockOnHistoryUp).toHaveBeenCalled();
+      expect(mockOnChange).toHaveBeenCalledWith('previous command');
+    });
+
+    it('должен вызывать onHistoryDown при нажатии ArrowDown', () => {
+      mockOnHistoryDown.mockReturnValue('next command');
+      
+      render(
+        <TerminalInput
+          value=""
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      
+      expect(mockOnHistoryDown).toHaveBeenCalled();
+      expect(mockOnChange).toHaveBeenCalledWith('next command');
+    });
+
+    it('должен очищать ввод при ArrowDown если следующей команды нет', () => {
+      mockOnHistoryDown.mockReturnValue(null);
+      
+      render(
+        <TerminalInput
+          value="current text"
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      
+      expect(mockOnHistoryDown).toHaveBeenCalled();
+      expect(mockOnChange).toHaveBeenCalledWith('');
+    });
+
+    it('должен сбрасывать навигацию по истории при вводе текста', () => {
+      render(
+        <TerminalInput
+          value=""
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.change(input, { target: { value: 'new text' } });
+      
+      expect(mockOnResetHistoryNavigation).toHaveBeenCalled();
+    });
+
+    it('должен сбрасывать навигацию по истории при нажатии Backspace', () => {
+      render(
+        <TerminalInput
+          value="text"
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.keyDown(input, { key: 'Backspace' });
+      
+      expect(mockOnResetHistoryNavigation).toHaveBeenCalled();
+    });
+
+    it('должен сбрасывать навигацию по истории при нажатии Delete', () => {
+      render(
+        <TerminalInput
+          value="text"
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.keyDown(input, { key: 'Delete' });
+      
+      expect(mockOnResetHistoryNavigation).toHaveBeenCalled();
+    });
+
+    it('должен сбрасывать навигацию по истории при вводе символа', () => {
+      render(
+        <TerminalInput
+          value=""
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.keyDown(input, { key: 'a' });
+      
+      expect(mockOnResetHistoryNavigation).toHaveBeenCalled();
+    });
+
+    it('не должен сбрасывать навигацию при других клавишах', () => {
+      render(
+        <TerminalInput
+          value=""
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      fireEvent.keyDown(input, { key: 'Control' });
+      fireEvent.keyDown(input, { key: 'Alt' });
+      fireEvent.keyDown(input, { key: 'Meta' });
+      
+      expect(mockOnResetHistoryNavigation).not.toHaveBeenCalled();
+    });
+
+    it('должен предотвращать default поведение для ArrowUp и ArrowDown', () => {
+      // Создаем mock для onKeyDown, который будет вызывать preventDefault
+      const mockOnKeyDown = jest.fn();
+      
+      render(
+        <TerminalInput
+          value=""
+          onChange={mockOnChange}
+          onSubmit={mockOnSubmit}
+          onHistoryUp={mockOnHistoryUp}
+          onHistoryDown={mockOnHistoryDown}
+          onResetHistoryNavigation={mockOnResetHistoryNavigation}
+          onKeyDown={mockOnKeyDown}
+        />
+      );
+      
+      const input = screen.getByTestId('terminal-input');
+      
+      // Тестируем ArrowUp
+      fireEvent.keyDown(input, { key: 'ArrowUp' });
+      expect(mockOnHistoryUp).toHaveBeenCalled();
+      
+      // Сбрасываем и тестируем ArrowDown
+      mockOnHistoryUp.mockClear();
+      
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(mockOnHistoryDown).toHaveBeenCalled();
+    });
   });
 });
