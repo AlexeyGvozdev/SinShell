@@ -84,13 +84,13 @@ describe('TerminalOutput', () => {
     render(<TerminalOutput entries={mockEntries} />);
     
     const commandEntry = screen.getByTestId('terminal-entry-1');
-    expect(commandEntry).toHaveClass('terminal-entry--command');
+    expect(commandEntry).toHaveClass('terminal-line terminal-line--command');
     
     const outputEntry = screen.getByTestId('terminal-entry-2');
-    expect(outputEntry).toHaveClass('terminal-entry--output');
+    expect(outputEntry).toHaveClass('terminal-line terminal-line--output');
     
     const errorEntry = screen.getByTestId('terminal-entry-4');
-    expect(errorEntry).toHaveClass('terminal-entry--error');
+    expect(errorEntry).toHaveClass('terminal-line terminal-line--error');
   });
 
   it('должен применять кастомный className', () => {
