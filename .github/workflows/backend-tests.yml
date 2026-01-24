@@ -16,6 +16,11 @@ on:
       - 'backend/**'
       - '.github/workflows/backend-tests.yml'
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   test:
     name: Run Backend Tests
