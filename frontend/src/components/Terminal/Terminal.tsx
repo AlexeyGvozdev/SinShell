@@ -14,6 +14,7 @@ export interface TerminalProps {
   onCommand?: (command: string) => Promise<React.ReactNode>;
   welcomeMessage?: React.ReactNode;
   className?: string;
+  title?: string;
 }
 
 /**
@@ -24,6 +25,7 @@ export const Terminal: React.FC<TerminalProps> = ({
   onCommand,
   welcomeMessage,
   className = '',
+  title = 'SinShell Terminal',
 }) => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [currentInput, setCurrentInput] = useState('');
@@ -130,6 +132,15 @@ export const Terminal: React.FC<TerminalProps> = ({
       role="application"
       aria-label="Терминал"
     >
+      {/* Terminal Header */}
+      <div className="terminal-header">
+        <button className="terminal-button close" aria-label="Закрыть" />
+        <button className="terminal-button minimize" aria-label="Свернуть" />
+        <button className="terminal-button maximize" aria-label="Развернуть" />
+        <div className="terminal-title">{title}</div>
+      </div>
+
+      {/* Terminal Content */}
       <div className="terminal-content">
         <TerminalOutput entries={history} />
         <TerminalInput

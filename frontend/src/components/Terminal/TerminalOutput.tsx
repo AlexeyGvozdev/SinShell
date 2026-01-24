@@ -26,7 +26,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({
       {entries.map((entry) => (
         <div
           key={entry.id}
-          className={`terminal-entry terminal-entry--${entry.type}`}
+          className={`terminal-line terminal-line--${entry.type}`}
           data-testid={`terminal-entry-${entry.id}`}
         >
           {entry.type === 'command' && (
