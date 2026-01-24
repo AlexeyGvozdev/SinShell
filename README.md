@@ -1,5 +1,9 @@
 # SinShell - Terminal Styled Website
 
+![Backend Tests](https://github.com/AlexeyGvozdev/SinShell/workflows/Backend%20Tests/badge.svg)
+![CI](https://github.com/AlexeyGvozdev/SinShell/workflows/CI/badge.svg)
+[![codecov](https://codecov.io/gh/AlexeyGvozdev/SinShell/branch/develop/graph/badge.svg)](https://codecov.io/gh/AlexeyGvozdev/SinShell)
+
 A modern terminal-styled website built with Next.js frontend and Express backend, inspired by LiveTerm.
 
 ## Features
