@@ -15,6 +15,7 @@ export const helpCommand: CommandDefinition = {
     'help theme - показать справку по команде theme',
   ],
   aliases: ['?', 'h'],
+  category: 'builtin',
   
   execute: (context: CommandContext): CommandResult => {
     const { args } = context;

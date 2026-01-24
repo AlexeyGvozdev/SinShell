@@ -16,6 +16,7 @@ export const themeCommand: CommandDefinition = {
     'theme - показать текущую тему и список доступных',
     'theme dark - переключиться на тему dark',
   ],
+  category: 'builtin',
   
   execute: (context: CommandContext): CommandResult => {
     const { args } = context;
