@@ -1,5 +1,5 @@
 # Multi-stage build для оптимизации размера образа
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Установка рабочей директории
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 # Установка рабочей директории
 WORKDIR /app
@@ -35,10 +35,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 
 # Открытие порта
-EXPOSE 3000
+EXPOSE 443
 
 # Переменные окружения
-ENV PORT 3000
+ENV PORT 443
 ENV HOSTNAME "0.0.0.0"
 
 # Запуск приложения
