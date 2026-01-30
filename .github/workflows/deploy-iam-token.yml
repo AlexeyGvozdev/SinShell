@@ -1,0 +1,83 @@
+name: Deploy to Yandex Cloud (IAM Token)
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Yandex Cloud IAM token
+        id: get-iam-token
+        uses: docker://ghcr.io/yc-actions/yc-iam-token-fed:1.0.0
+        with:
+          yc-sa-id:  ${{ secrets.YC_SA_ID }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: cr.yandex
+          username: iam
+          password: ${{ steps.get-iam-token.outputs.token }}
+
+      - name: Build, tag, and push image to Yandex Cloud Container Registry
+        env:
+          CR_REGISTRY: ${{ secrets.YC_REGISTRY_ID }}
+          CR_REPOSITORY: sinshell-app
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG .
+          docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
+
+      - name: Deploy Serverless Container (IAM Token)
+        id: deploy-sls-container
+        uses: yc-actions/yc-sls-container-deploy@v4
+        with:
+          yc-iam-token: ${{ secrets.YC_IAM_TOKEN }}
+          container-name: sinshell-app
+          folder-id: ${{ secrets.YC_FOLDER_ID }}
+          public: true
+          revision-service-account-id: ${{ secrets.YC_SERVICE_ACCOUNT_ID }}
+          revision-cores: 1
+          revision-memory: 256MB
+          revision-core-fraction: 100
+          revision-concurrency: 8
+          revision-image-url: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/sinshell-app:${{ github.sha }}
+          revision-execution-timeout: 60
+          revision-env: |
+            NODE_ENV=production
+            HOST=0.0.0.0
+            NEXT_PUBLIC_API_URL=https://${{ secrets.APP_DOMAIN }}/api/v1
+            NEXT_PUBLIC_APP_NAME=SinShell
+            LOG_LEVEL=info
+          revision-runtime: http
+          revision-log-options-disabled: false
+          revision-log-options-min-level: level_unspecified
+
+      - name: Get deployment info
+        run: |
+          echo "🚀 Deployment completed successfully!"
+          echo "📦 Container: sinshell-app"
+          echo "🌐 App URL: https://${{ secrets.APP_DOMAIN }}"
+          echo "🔧 Image: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/sinshell-app:${{ github.sha }}"
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment to Yandex Cloud completed successfully!"
+            echo "🌐 Your app is available at: https://${{ secrets.APP_DOMAIN }}"
+          else
+            echo "❌ Deployment failed!"
+            exit 1
+          fi

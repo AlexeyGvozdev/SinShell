@@ -119,41 +119,68 @@ deploy_app() {
     
     APP_NAME="sinshell-app"
     
+    # Получаем или создаем сервисный аккаунт
+    SA_NAME="sinshell-sa"
+    SA_ID=$(yc iam service-account get --name "$SA_NAME" --format json 2>/dev/null | jq -r '.id' || echo "")
+    
+    if [ -z "$SA_ID" ]; then
+        log_info "Создаем сервисный аккаунт..."
+        SA_ID=$(yc iam service-account create --name "$SA_NAME" --description "Service account for SinShell" --format json | jq -r '.id')
+        
+        # Назначаем роли
+        FOLDER_ID=$(yc config get folder-id)
+        yc resource-manager folder add-access-binding "$FOLDER_ID" \
+            --role container-registry.images.puller \
+            --subject serviceAccount:$SA_ID
+            
+        log_success "Сервисный аккаунт создан: $SA_ID"
+    else
+        log_success "Найден сервисный аккаунт: $SA_ID"
+    fi
+    
     # Проверяем существование приложения
     if yc serverless container get --name "$APP_NAME" &> /dev/null; then
         log_info "Обновляем существующее приложение..."
         
-        yc serverless container deploy \
-            --name "$APP_NAME" \
+        yc serverless container revision deploy \
+            --container-name "$APP_NAME" \
             --image "$IMAGE_NAME" \
             --port 80 \
             --memory 256M \
             --cores 1 \
             --execution-timeout 30s \
-            --environment-file .env.production \
-            --min-instances 0 \
-            --max-instances 5
+            --service-account-id "$SA_ID" \
+            --environment NODE_ENV=production \
+            --environment PORT=5000 \
+            --environment HOST=0.0.0.0 \
+            --environment NEXT_PUBLIC_API_URL=http://localhost:5000 \
+            --environment NEXT_PUBLIC_APP_NAME=SinShell \
+            --environment LOG_LEVEL=info
             
         log_success "Приложение успешно обновлено"
     else
         log_info "Создаем новое приложение..."
         
-        # Создание пустого контейнера
+        # Создание контейнера с публичным доступом
         yc serverless container create \
             --name "$APP_NAME" \
             --description "Terminal styled website"
         
-        # Развертывание с образом
-        yc serverless container deploy \
-            --name "$APP_NAME" \
+        # Развертывание с образом и публичным доступом
+        yc serverless container revision deploy \
+            --container-name "$APP_NAME" \
             --image "$IMAGE_NAME" \
             --port 80 \
             --memory 256M \
             --cores 1 \
             --execution-timeout 30s \
-            --environment-file .env.production \
-            --min-instances 0 \
-            --max-instances 5
+            --service-account-id "$SA_ID" \
+            --environment NODE_ENV=production \
+            --environment PORT=5000 \
+            --environment HOST=0.0.0.0 \
+            --environment NEXT_PUBLIC_API_URL=http://localhost:5000 \
+            --environment NEXT_PUBLIC_APP_NAME=SinShell \
+            --environment LOG_LEVEL=info
             
         log_success "Приложение успешно создано"
     fi
@@ -164,16 +191,38 @@ get_app_url() {
     log_info "Получение URL приложения..."
     
     # Ждем несколько секунд для инициализации
-    sleep 10
+    sleep 5
     
-    # Получаем домен приложения
-    APP_DOMAIN=$(yc serverless container get --name "$APP_NAME" --format json | jq -r '.status[0].domainName' 2>/dev/null || echo "")
+    # Получаем информацию о последней ревизии
+    REVISION_INFO=$(yc serverless container revision list --container-name "$APP_NAME" --limit 1 --format json)
     
-    if [ -n "$APP_DOMAIN" ]; then
-        log_success "Приложение доступно по адресу: https://$APP_DOMAIN"
-        log_info "Для проверки выполните: curl https://$APP_DOMAIN/api/v1/health"
+    # Извлекаем URL из ревизии
+    APP_URL=$(echo "$REVISION_INFO" | jq -r '.[0].image.image_url' 2>/dev/null || echo "")
+    REVISION_ID=$(echo "$REVISION_INFO" | jq -r '.[0].id' 2>/dev/null || echo "")
+    
+    if [ -n "$REVISION_ID" ]; then
+        # Формируем публичный URL
+        FOLDER_ID=$(yc config get folder-id)
+        PUBLIC_URL="https://${REVISION_ID}.containers.yandexcloud.net"
+        
+        log_success "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_success "✅ Приложение успешно развернуто!"
+        log_success "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_success ""
+        log_success "🌐 Публичный URL: $PUBLIC_URL"
+        log_success "📋 ID ревизии: $REVISION_ID"
+        log_success ""
+        log_info "Для проверки работы выполните:"
+        log_info "  curl $PUBLIC_URL/api/v1/health"
+        log_info ""
+        log_info "Для просмотра в браузере откройте:"
+        log_info "  $PUBLIC_URL"
+        log_success ""
+        log_success "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     else
-        log_warning "URL приложения пока недоступен. Проверьте статус в консоли Yandex Cloud"
+        log_warning "Не удалось получить URL приложения"
+        log_info "Проверьте статус вручную:"
+        log_info "  yc serverless container revision list --container-name $APP_NAME"
     fi
 }
 

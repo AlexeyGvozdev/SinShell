@@ -10,8 +10,8 @@ const compression = require('compression');
 const { createApp: createBackendApp } = require('./backend/dist/app');
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = process.env.HOSTNAME || 'localhost';
-const port = process.env.PORT || 3000;
+const hostname = process.env.HOSTNAME || '0.0.0.0';
+const port = process.env.PORT || 80;
 
 // Initialize Next.js app
 const app = next({ dev, hostname, port });
