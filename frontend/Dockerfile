@@ -35,10 +35,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 
 # Открытие порта
-EXPOSE 443
+EXPOSE 80
 
 # Переменные окружения
-ENV PORT 443
+ENV PORT 80
 ENV HOSTNAME "0.0.0.0"
 
 # Запуск приложения
