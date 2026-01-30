@@ -178,10 +178,28 @@ The script will automatically:
 - ✅ Build and push Docker image
 - ✅ Deploy to Yandex Cloud App Platform
 - ✅ Configure environment variables
+- ✅ Create public access
 - ✅ Provide application URL
 
-📖 **Detailed Guide**: See [QUICK_DEPLOY.md](QUICK_DEPLOY.md) for step-by-step instructions
-📚 **Full Documentation**: See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for advanced configuration
+📖 **Quick Deploy**: [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - step-by-step instructions
+📚 **Full Guide**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - advanced configuration
+🔧 **Access Setup**: [YANDEX_CLOUD_ACCESS_SETUP.md](YANDEX_CLOUD_ACCESS_SETUP.md) - troubleshooting access issues
+
+### 🌐 Getting Your Site URL
+
+After deployment, get your public URL:
+
+```bash
+# Quick way - use the helper script
+./get-url.sh
+
+# Or manually
+yc serverless container revision list --container-name sinshell-app --limit 1
+```
+
+Your site will be available at: `https://REVISION_ID.containers.yandexcloud.net`
+
+**⚠️ Site not accessible?** See [QUICK_FIX_ACCESS.md](QUICK_FIX_ACCESS.md) for immediate solutions
 
 ### Manual Deployment Options
 
